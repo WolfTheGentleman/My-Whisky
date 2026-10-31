@@ -1,6 +1,6 @@
 // Service worker: caches the app so it works offline.
 // Bump CACHE when you upload a new version of the app.
-const CACHE = 'my-whisky-v2';
+const CACHE = 'my-whisky-v3';
 const FILES = [
   './', 'index.html', 'style.css', 'app.js', 'data.js',
   'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'

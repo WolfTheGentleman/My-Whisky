@@ -1,7 +1,7 @@
-// My Whisky - starter data.
-// Each distillery: [name, country, region, year founded]
-// Founding years are the commonly quoted ones; double-check any you care about.
-// You can add your own distilleries from inside the app (Add tab).
+// My Whisky - starter data (single malts only).
+// DIST_RAW: [name, country, region, year founded]  (founding year is blank for supermarket own-label brands)
+// BOTTLINGS: single malt expressions per distillery. The key must match a name in DIST_RAW.
+// Range availability (especially supermarkets) changes often. Anything missing can be typed in the Add tab.
 
 window.REGION_COLORS = {
   Speyside: '#c8922a',
@@ -10,6 +10,7 @@ window.REGION_COLORS = {
   Islands: '#2f8f9d',
   Lowlands: '#8a6fb0',
   Campbeltown: '#b5543c',
+  'Supermarket own-label': '#cf7a2e',
   Japan: '#d64550',
   Ireland: '#2e9b5f',
   Wales: '#c8102e',
@@ -22,10 +23,8 @@ window.REGION_COLORS = {
   Other: '#b08a3e'
 };
 
-window.SCOTCH_REGIONS = ['Speyside', 'Highlands', 'Islay', 'Islands', 'Lowlands', 'Campbeltown'];
-
 window.DIST_RAW = [
-  // Speyside
+  // ---- Speyside
   ['Glenfiddich', 'Scotland', 'Speyside', 1887],
   ['The Glenlivet', 'Scotland', 'Speyside', 1824],
   ['The Macallan', 'Scotland', 'Speyside', 1824],
@@ -54,7 +53,11 @@ window.DIST_RAW = [
   ['Benrinnes', 'Scotland', 'Speyside', 1826],
   ['Aultmore', 'Scotland', 'Speyside', 1897],
   ['Auchroisk', 'Scotland', 'Speyside', 1974],
-  // Highlands
+  ['Glen Keith', 'Scotland', 'Speyside', 1957],
+  ['Tamnavulin', 'Scotland', 'Speyside', 1966],
+  ['Allt-à-Bhainne', 'Scotland', 'Speyside', 1975],
+  ['Dufftown', 'Scotland', 'Speyside', 1896],
+  // ---- Highlands
   ['Glenmorangie', 'Scotland', 'Highlands', 1843],
   ['Dalmore', 'Scotland', 'Highlands', 1839],
   ['Oban', 'Scotland', 'Highlands', 1794],
@@ -76,7 +79,10 @@ window.DIST_RAW = [
   ['Teaninich', 'Scotland', 'Highlands', 1817],
   ['Wolfburn', 'Scotland', 'Highlands', 2013],
   ['Ardnamurchan', 'Scotland', 'Highlands', 2014],
-  // Islands
+  ['Loch Lomond', 'Scotland', 'Highlands', 1964],
+  ['Tullibardine', 'Scotland', 'Highlands', 1949],
+  ['Glencadam', 'Scotland', 'Highlands', 1825],
+  // ---- Islands
   ['Talisker', 'Scotland', 'Islands', 1830],
   ['Highland Park', 'Scotland', 'Islands', 1798],
   ['Scapa', 'Scotland', 'Islands', 1885],
@@ -84,7 +90,7 @@ window.DIST_RAW = [
   ['Tobermory', 'Scotland', 'Islands', 1798],
   ['Arran', 'Scotland', 'Islands', 1995],
   ['Abhainn Dearg', 'Scotland', 'Islands', 2008],
-  // Islay
+  // ---- Islay
   ['Laphroaig', 'Scotland', 'Islay', 1815],
   ['Lagavulin', 'Scotland', 'Islay', 1816],
   ['Ardbeg', 'Scotland', 'Islay', 1815],
@@ -94,52 +100,176 @@ window.DIST_RAW = [
   ['Caol Ila', 'Scotland', 'Islay', 1846],
   ['Kilchoman', 'Scotland', 'Islay', 2005],
   ['Port Ellen', 'Scotland', 'Islay', 1825],
-  // Lowlands
+  // ---- Lowlands
   ['Auchentoshan', 'Scotland', 'Lowlands', 1823],
   ['Glenkinchie', 'Scotland', 'Lowlands', 1837],
   ['Bladnoch', 'Scotland', 'Lowlands', 1817],
   ['Rosebank', 'Scotland', 'Lowlands', 1840],
   ['Daftmill', 'Scotland', 'Lowlands', 2005],
   ['Annandale', 'Scotland', 'Lowlands', 2014],
-  // Campbeltown
+  ['Kingsbarns', 'Scotland', 'Lowlands', 2014],
+  // ---- Campbeltown
   ['Springbank', 'Scotland', 'Campbeltown', 1828],
   ['Glen Scotia', 'Scotland', 'Campbeltown', 1832],
   ['Kilkerran (Glengyle)', 'Scotland', 'Campbeltown', 2004],
-  // Japan
+  // ---- Supermarket own-label single malts (distillery not named on the bottle)
+  ['Glen Marnoch (Aldi)', 'Scotland', 'Supermarket own-label', ''],
+  ['Ben Bracken (Lidl)', 'Scotland', 'Supermarket own-label', ''],
+  ['Tesco Finest', 'Scotland', 'Supermarket own-label', ''],
+  ['Glenfairn (Tesco)', 'Scotland', 'Supermarket own-label', ''],
+  ["Sainsbury's Taste the Difference", 'Scotland', 'Supermarket own-label', ''],
+  ['Asda Extra Special', 'Scotland', 'Supermarket own-label', ''],
+  ['Waitrose No.1', 'Scotland', 'Supermarket own-label', ''],
+  ['M&S', 'Scotland', 'Supermarket own-label', ''],
+  // ---- Japan
   ['Yamazaki', 'Japan', 'Japan', 1923],
   ['Hakushu', 'Japan', 'Japan', 1973],
   ['Yoichi', 'Japan', 'Japan', 1934],
   ['Miyagikyo', 'Japan', 'Japan', 1969],
   ['Chichibu', 'Japan', 'Japan', 2008],
   ['Fuji', 'Japan', 'Japan', 1973],
-  // Ireland
-  ['Midleton', 'Ireland', 'Ireland', 1975],
+  // ---- Ireland (single malt only)
   ['Bushmills', 'Ireland', 'Ireland', 1608],
   ['Cooley', 'Ireland', 'Ireland', 1987],
-  ['Kilbeggan', 'Ireland', 'Ireland', 1757],
   ['Teeling', 'Ireland', 'Ireland', 2015],
   ['Dingle', 'Ireland', 'Ireland', 2012],
-  ['Tullamore', 'Ireland', 'Ireland', 2014],
-  // Wales
+  // ---- Wales
   ['Penderyn', 'Wales', 'Wales', 2000],
   ['Aber Falls', 'Wales', 'Wales', 2017],
-  // England
+  // ---- England
   ['Cotswolds', 'England', 'England', 2014],
   ['The English Distillery', 'England', 'England', 2006],
-  // USA
-  ['Jack Daniel\'s', 'USA', 'USA', 1866],
-  ['Maker\'s Mark', 'USA', 'USA', 1953],
-  ['Four Roses', 'USA', 'USA', 1888],
-  // Rest of the world
+  // ---- USA (American single malt)
+  ['Westland', 'USA', 'USA', 2010],
+  ['Balcones', 'USA', 'USA', 2008],
+  // ---- Rest of the world
   ['Amrut', 'India', 'India', 1948],
+  ['Paul John', 'India', 'India', ''],
   ['Kavalan', 'Taiwan', 'Taiwan', 2005],
   ['Sullivans Cove', 'Australia', 'Australia', 1994],
+  ['Starward', 'Australia', 'Australia', 2007],
   ['Mackmyra', 'Sweden', 'Sweden', 1999]
 ];
 
-// Common expression names offered as suggestions when adding a whisky.
-window.EXPRESSIONS = [
-  '10 Year Old', '12 Year Old', '14 Year Old', '15 Year Old', '16 Year Old',
-  '18 Year Old', '21 Year Old', '25 Year Old', 'Cask Strength', 'Single Cask',
-  'Sherry Cask', 'Bourbon Cask', 'Port Cask', 'Non-age statement', 'Independent bottling'
-];
+window.BOTTLINGS = {
+  // ---- Speyside
+  'Glenfiddich': ['12 Year Old', '14 Year Old Bourbon Barrel Reserve', '15 Year Old Solera', '18 Year Old', '21 Year Old Gran Reserva', 'Fire & Cane'],
+  'The Glenlivet': ['12 Year Old', "Founder's Reserve", '14 Year Old Cognac Cask Selection', '15 Year Old French Oak Reserve', '18 Year Old', 'Nadurra'],
+  'The Macallan': ['12 Year Old Double Cask', '12 Year Old Sherry Oak', '12 Year Old Triple Cask Matured', '15 Year Old Double Cask', '18 Year Old Sherry Oak'],
+  'The Balvenie': ['12 Year Old DoubleWood', '14 Year Old Caribbean Cask', '16 Year Old French Oak', '21 Year Old PortWood'],
+  'Aberlour': ['10 Year Old', '12 Year Old Double Cask Matured', '12 Year Old Non Chill-Filtered', '14 Year Old', '16 Year Old', '18 Year Old', "A'bunadh"],
+  'Cardhu': ['12 Year Old', 'Gold Reserve', 'Amber Rock'],
+  'Cragganmore': ['12 Year Old', "Distillers Edition"],
+  'Glenfarclas': ['10 Year Old', '12 Year Old', '15 Year Old', '17 Year Old', '21 Year Old', '105 Cask Strength', '25 Year Old'],
+  'Glen Grant': ['10 Year Old', '12 Year Old', '15 Year Old', '18 Year Old', "Major's Reserve"],
+  'Mortlach': ['12 Year Old', '16 Year Old', 'Rare Old'],
+  'Strathisla': ['12 Year Old'],
+  'Glen Moray': ['Classic', '12 Year Old', '15 Year Old', '18 Year Old', 'Peated', 'Port Cask Finish', 'Sherry Cask Finish'],
+  'BenRiach': ['10 Year Old', '12 Year Old', '16 Year Old', '21 Year Old', 'The Smoky Ten', 'The Smoky Twelve'],
+  'The GlenDronach': ['12 Year Old Original', '15 Year Old Revival', '18 Year Old Allardice', '21 Year Old Parliament'],
+  'The Glenrothes': ['Select Reserve', '12 Year Old', '18 Year Old', "Whisky Maker's Cut"],
+  'Tamdhu': ['10 Year Old', '12 Year Old', 'Batch Strength'],
+  'Knockando': ['12 Year Old', '15 Year Old', '18 Year Old', '21 Year Old Master Reserve'],
+  'Speyburn': ['10 Year Old', '15 Year Old', 'Bradan Orach', 'Arranta Casks'],
+  'Benromach': ['10 Year Old', '15 Year Old', 'Peat Smoke', 'Cask Strength'],
+  'Craigellachie': ['13 Year Old', '17 Year Old'],
+  'Glenallachie': ['10 Year Old', '12 Year Old', '15 Year Old', '18 Year Old'],
+  'Tomintoul': ['10 Year Old', '14 Year Old', '16 Year Old', 'Pedro Ximenez Sherry Cask Finish', 'With a Peaty Tang'],
+  'Linkwood': ['12 Year Old'],
+  'Longmorn': ['16 Year Old', "Distiller's Choice"],
+  'Glen Elgin': ['12 Year Old'],
+  'Benrinnes': ['15 Year Old'],
+  'Aultmore': ['12 Year Old', '18 Year Old', '21 Year Old'],
+  'Auchroisk': ['10 Year Old'],
+  'Glen Keith': ['Single Malt'],
+  'Tamnavulin': ['Double Cask', 'Sherry Cask Edition', 'Port Cask Edition'],
+  'Allt-à-Bhainne': ['Single Malt'],
+  'Dufftown': ['The Singleton 12 Year Old', 'The Singleton 15 Year Old', 'The Singleton 18 Year Old'],
+  // ---- Highlands
+  'Glenmorangie': ['The Original', 'Lasanta 12 Year Old', 'Quinta Ruban', "Nectar d'Or", 'Triple Cask Reserve', '18 Year Old'],
+  'Dalmore': ['12 Year Old', '15 Year Old', '18 Year Old', 'Cigar Malt Reserve', 'Port Wood Reserve', 'King Alexander III'],
+  'Oban': ['14 Year Old', 'Little Bay'],
+  'Clynelish': ['14 Year Old'],
+  'Old Pulteney': ['12 Year Old', '15 Year Old', '18 Year Old', 'Navigator'],
+  'Balblair': ['12 Year Old', '15 Year Old', '18 Year Old'],
+  'Glengoyne': ['10 Year Old', '12 Year Old', '15 Year Old', '18 Year Old', '21 Year Old', 'Cask Strength'],
+  'Aberfeldy': ['12 Year Old', '16 Year Old', '18 Year Old', '21 Year Old'],
+  'Edradour': ['10 Year Old', 'Caledonia 12 Year Old'],
+  'Tomatin': ['Legacy', '12 Year Old', '14 Year Old', '18 Year Old', 'Cask Strength'],
+  'Dalwhinnie': ['15 Year Old', "Winter's Gold", 'Distillers Edition'],
+  'Deanston': ['12 Year Old', 'Virgin Oak', '15 Year Old Organic', '18 Year Old'],
+  'Fettercairn': ['12 Year Old', '16 Year Old', 'Fior'],
+  'Glen Garioch': ['12 Year Old', "Founder's Reserve"],
+  'Royal Lochnagar': ['12 Year Old'],
+  'Ardmore': ['Legacy', 'Traditional Cask', '12 Year Old'],
+  'Blair Athol': ['12 Year Old'],
+  'Glen Ord': ['The Singleton 12 Year Old', 'The Singleton 15 Year Old', 'The Singleton 18 Year Old'],
+  'Teaninich': ['10 Year Old'],
+  'Wolfburn': ['Northland', 'Aurora', 'Morven'],
+  'Loch Lomond': ['Original', '12 Year Old', 'Inchmurrin 12 Year Old', 'Inchmoan 12 Year Old'],
+  'Tullibardine': ['Sovereign', '225 Sauternes Finish', '228 Burgundy Finish', '500 Sherry Finish'],
+  'Glencadam': ['10 Year Old', '15 Year Old', '18 Year Old'],
+  // ---- Islands
+  'Talisker': ['10 Year Old', '18 Year Old', 'Skye', 'Storm', 'Distillers Edition'],
+  'Highland Park': ['Viking Scars 10 Year Old', 'Viking Honour 12 Year Old', 'Viking Heart 15 Year Old', 'Viking Pride 18 Year Old', 'Cask Strength', 'Dark Origins'],
+  'Scapa': ['Skiren', 'Glansa', '16 Year Old'],
+  'Jura': ['10 Year Old', '12 Year Old', '18 Year Old', 'Journey', 'Seven Wood', 'Superstition'],
+  'Tobermory': ['12 Year Old', 'Ledaig 10 Year Old', 'Ledaig 18 Year Old'],
+  'Arran': ['10 Year Old', '14 Year Old', '18 Year Old', 'Sauternes Cask Finish', 'Port Cask Finish', 'Amarone Cask Finish', 'Machrie Moor'],
+  // ---- Islay
+  'Laphroaig': ['10 Year Old', '10 Year Old Cask Strength', 'Select', 'Triple Wood', 'Quarter Cask', '16 Year Old', '18 Year Old', 'PX Cask'],
+  'Lagavulin': ['8 Year Old', '16 Year Old', 'Distillers Edition', '12 Year Old Cask Strength'],
+  'Ardbeg': ['10 Year Old', 'An Oa', 'Uigeadail', 'Corryvreckan', 'Wee Beastie 5 Year Old', 'Traigh Bhan 19 Year Old'],
+  'Bowmore': ['12 Year Old', '15 Year Old Darkest', '18 Year Old', 'No.1'],
+  'Bruichladdich': ['The Classic Laddie', 'Islay Barley', 'Bere Barley', 'Port Charlotte 10 Year Old', 'Octomore 10 Year Old'],
+  'Bunnahabhain': ['12 Year Old', '18 Year Old', 'Stiùireadair', 'Toiteach A Dhà', 'Eirigh Na Greine'],
+  'Caol Ila': ['12 Year Old', '18 Year Old', 'Distillers Edition', 'Moch'],
+  'Kilchoman': ['Machir Bay', 'Sanaig', 'Loch Gorm', '100% Islay'],
+  // ---- Lowlands
+  'Auchentoshan': ['American Oak', '12 Year Old', 'Three Wood', '18 Year Old', 'Blood Oak'],
+  'Glenkinchie': ['12 Year Old', 'Distillers Edition'],
+  'Bladnoch': ['11 Year Old', '14 Year Old', 'Samsara', 'Vinaya', 'Alinta'],
+  'Rosebank': ['12 Year Old', '31 Year Old'],
+  'Kingsbarns': ['Dream to Dram', 'Balcomie', 'Doocot'],
+  // ---- Campbeltown
+  'Springbank': ['10 Year Old', '12 Year Old Cask Strength', '15 Year Old', '18 Year Old', 'Longrow Peated', 'Hazelburn 10 Year Old'],
+  'Glen Scotia': ['Double Cask', 'Victoriana', '15 Year Old', '18 Year Old', 'Harbour'],
+  'Kilkerran (Glengyle)': ['8 Year Old Cask Strength', '12 Year Old', '16 Year Old', 'Heavily Peated'],
+  // ---- Supermarket own-label
+  'Glen Marnoch (Aldi)': ['Speyside Single Malt', 'Highland Single Malt', 'Islay Single Malt', 'Island Single Malt'],
+  'Ben Bracken (Lidl)': ['Speyside Single Malt', 'Highland Single Malt', 'Islay Single Malt', 'Islay 16 Year Old', 'Islay 19 Year Old'],
+  'Tesco Finest': ['Speyside 12 Year Old', 'Highland 12 Year Old', 'Islay 10 Year Old'],
+  'Glenfairn (Tesco)': ['Sweet Speyside Single Malt'],
+  "Sainsbury's Taste the Difference": ['Speyside Single Malt', 'Highland Single Malt'],
+  'Asda Extra Special': ['Speyside Single Malt', 'Highland Single Malt', 'Islay Single Malt'],
+  'Waitrose No.1': ['Speyside Single Malt', 'Highland Single Malt', 'Islay Single Malt'],
+  'M&S': ['Kenmore Single Malt'],
+  // ---- Japan
+  'Yamazaki': ["Distiller's Reserve", '12 Year Old', '18 Year Old'],
+  'Hakushu': ["Distiller's Reserve", '12 Year Old', '18 Year Old'],
+  'Yoichi': ['Single Malt', '10 Year Old'],
+  'Miyagikyo': ['Single Malt'],
+  'Chichibu': ['The First Ten'],
+  'Fuji': ['Single Malt'],
+  // ---- Ireland
+  'Bushmills': ['10 Year Old', '16 Year Old', '21 Year Old'],
+  'Cooley': ['Connemara Peated', 'Connemara 12 Year Old', 'Tyrconnell'],
+  'Teeling': ['Single Malt', 'Blackpitts Peated Single Malt'],
+  'Dingle': ['Single Malt'],
+  // ---- Wales
+  'Penderyn': ['Madeira Finish', 'Sherrywood', 'Peated', 'Portwood', 'Celt'],
+  'Aber Falls': ['Single Malt'],
+  // ---- England
+  'Cotswolds': ["Founder's Choice", 'Peated Cask'],
+  'The English Distillery': ['Original', 'Smokey'],
+  // ---- USA
+  'Westland': ['American Single Malt', 'Peated'],
+  'Balcones': ['Texas Single Malt'],
+  // ---- Rest of the world
+  'Amrut': ['Single Malt', 'Fusion', 'Peated'],
+  'Paul John': ['Brilliance', 'Bold', 'Classic Select Cask', 'Edited', 'Peated Select Cask'],
+  'Kavalan': ['Classic', 'Concertmaster Port Cask Finish', 'Podium', 'Solist Vinho Barrique', 'Solist Sherry Cask'],
+  'Sullivans Cove': ['French Oak', 'American Oak', 'Double Cask'],
+  'Starward': ['Nova', 'Solera'],
+  'Mackmyra': ['Brukswhisky', 'Svensk Rök', 'Svensk Ek']
+};

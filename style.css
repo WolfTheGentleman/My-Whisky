@@ -127,3 +127,14 @@ input[type=range] { width: 100%; accent-color: var(--amber); }
 .num { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 0; font-size: 22px; font-family: Georgia, serif; color: var(--ink); }
 .num.on { color: #fff; font-weight: 700; }
 button:disabled { opacity: .35; }
+
+/* Suggestions, search, locked cards */
+.sug { background: var(--card2); border: 1px solid var(--line); border-radius: 12px; margin-top: 6px; max-height: 280px; overflow: auto; }
+.sug[hidden] { display: none; }
+.sug-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 12px; color: var(--ink); }
+.sug-row:last-child { border-bottom: 0; }
+.sug-row small { color: var(--muted); flex: none; font-size: 12px; }
+.sug-row.add { color: var(--amber); }
+.search { margin: 8px 0 12px; -webkit-appearance: none; appearance: none; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; font-size: 16px; }
+.card.locked { opacity: .6; filter: grayscale(1); border: 1px dashed #5a544b; background: #26221d; }
+.subs { font-size: 14px; color: var(--ink); background: var(--card); border-radius: 10px; padding: 8px 10px; margin: 8px 0; }

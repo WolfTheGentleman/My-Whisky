@@ -6,14 +6,14 @@
   var REGION_MIN = 3; // distilleries with at least one whisky for a region to turn colour
 
   var FAMILIES = [
-    { id: 'fruity', name: 'Fruity', color: '#12a07a' },
-    { id: 'floral', name: 'Floral', color: '#e8506a' },
-    { id: 'peaty', name: 'Peaty', color: '#7b3f9e' },
-    { id: 'cereal', name: 'Cereal', color: '#f2a22a' },
-    { id: 'woody', name: 'Woody', color: '#8a2f44' },
-    { id: 'feinty', name: 'Feinty', color: '#1f6fb5' },
-    { id: 'spicy', name: 'Spicy', color: '#f06a1e' },
-    { id: 'sulphury', name: 'Sulphury', color: '#7aa23a' }
+    { id: 'fruity', name: 'Fruity', color: '#12a07a', subs: ['Fresh fruit', 'Estery', 'Citrus', 'Fruity sweets'] },
+    { id: 'floral', name: 'Floral', color: '#e8506a', subs: ['Fresh flowers', 'Perfumed', 'Leafy', 'Plant house'] },
+    { id: 'peaty', name: 'Peaty', color: '#7b3f9e', subs: ['Smoky', 'Medicinal', 'Burnt', 'Tar'] },
+    { id: 'cereal', name: 'Cereal', color: '#f2a22a', subs: ['Dry cereal', 'Wet cereal', 'Malty', 'Yeasty'] },
+    { id: 'woody', name: 'Woody', color: '#8a2f44', subs: ['Oaky', 'Coconut', 'Nutty', 'Vanilla'] },
+    { id: 'feinty', name: 'Feinty', color: '#1f6fb5', subs: ['Leathery', 'Tobacco', 'Sweaty', 'Plastic'] },
+    { id: 'spicy', name: 'Spicy', color: '#f06a1e', subs: ['Dried spices', 'Peppery', 'Ginger', 'Sherried'] },
+    { id: 'sulphury', name: 'Sulphury', color: '#7aa23a', subs: ['Cooked vegetables', 'Meaty', 'Struck match', 'Rubbery'] }
   ];
 
   var $ = function (s, el) { return (el || document).querySelector(s); };
@@ -68,7 +68,7 @@
   var state = {
     view: 'home', param: null,
     whiskies: [], custom: [], dists: [], distMap: {},
-    country: 'Scotland', homeCountry: 'All', sort: 'recent',
+    country: 'Scotland', homeCountry: 'All', exploreQ: '', sort: 'recent',
     draft: null, notice: ''
   };
 
@@ -80,6 +80,18 @@
     state.dists = list;
     state.distMap = {};
     list.forEach(function (d) { state.distMap[d.id] = d; });
+    state.bottles = [];
+    state.bottleMap = {};
+    Object.keys(window.BOTTLINGS).forEach(function (dn) {
+      var did = slug(dn);
+      if (!state.distMap[did]) return;
+      window.BOTTLINGS[dn].forEach(function (nm) {
+        var m = /(\d+) Year Old/.exec(nm);
+        var b = { id: slug(dn + ' ' + nm), distId: did, name: nm, age: m ? m[1] : '', full: dn + ' ' + nm };
+        state.bottles.push(b);
+        state.bottleMap[b.id] = b;
+      });
+    });
   }
 
   function loadAll() {
@@ -110,6 +122,48 @@
   function fullName(w) {
     var d = state.distMap[w.distId];
     return (d ? d.name : 'Unknown') + ' ' + w.name;
+  }
+
+  /* ---------- Search helpers ---------- */
+  function norm(s) {
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/['’]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+  function hit(n, hay) {
+    return n.split(' ').every(function (t) { return hay.indexOf(t) >= 0; });
+  }
+  function matchDists(q, limit) {
+    var n = norm(q);
+    if (!n) return [];
+    var out = [];
+    state.dists.forEach(function (d) {
+      var nm = norm(d.name), score;
+      if (hit(n, nm)) score = nm.indexOf(n) === 0 ? 0 : (' ' + nm).indexOf(' ' + n) >= 0 ? 1 : 2;
+      else if (hit(n, nm + ' ' + norm(d.region) + ' ' + norm(d.country))) score = 3;
+      else return;
+      out.push({ d: d, s: score });
+    });
+    out.sort(function (a, b) { return a.s - b.s || a.d.name.localeCompare(b.d.name); });
+    return out.slice(0, limit || 8).map(function (o) { return o.d; });
+  }
+  function matchBottles(q, distId, limit) {
+    var n = norm(q);
+    var pool = distId ? state.bottles.filter(function (b) { return b.distId === distId; }) : state.bottles;
+    if (!n) return distId ? pool.slice(0, limit || 12) : [];
+    if (!distId && n.length < 2) return [];
+    var out = [];
+    pool.forEach(function (b) {
+      var hay = norm(b.full);
+      if (!hit(n, hay)) return;
+      var nm = norm(b.name);
+      out.push({ b: b, s: nm.indexOf(n) === 0 ? 0 : hay.indexOf(n) === 0 ? 1 : 2 });
+    });
+    out.sort(function (a, b) { return a.s - b.s; });
+    return out.slice(0, limit || 12).map(function (o) { return o.b; });
+  }
+  function findRecord(distId, name) {
+    var n = norm(name);
+    return state.whiskies.filter(function (w) { return w.distId === distId && norm(w.name) === n; })[0] || null;
   }
 
   /* ---------- Components ---------- */
@@ -198,7 +252,38 @@
       '<div class="cards">' + (cards || '<div class="empty">Nothing here yet.</div>') + '</div>';
   }
 
-  function viewExplore() {
+  function whiskyCard(w) {
+    var thumb = w.photo ? ' style="background-image:url(' + w.photo + ')"' : '';
+    var d = state.distMap[w.distId] || {};
+    return '<button class="card" data-act="open" data-id="' + w.id + '"><div class="thumb"' + thumb + '>' + (w.photo ? '' : '🥃') + '</div>' +
+      '<div><div class="t">' + esc(fullName(w)) + '</div><div class="muted small">' + esc(d.region || '') + '</div></div>' +
+      '<div class="score">' + esc(w.rating || '–') + '<small>/10</small></div></button>';
+  }
+  function lockedCard(b) {
+    var d = state.distMap[b.distId] || {};
+    return '<button class="card locked" data-act="addbottle" data-id="' + b.id + '"><div class="thumb">🔒</div>' +
+      '<div><div class="t">' + esc(b.full) + '</div><div class="muted small">' + esc(d.region || '') + ' · tap to unlock</div></div></button>';
+  }
+
+  function searchResults(q) {
+    var n = norm(q);
+    var ds = matchDists(q, 12);
+    var have = state.whiskies.filter(function (w) {
+      var d = state.distMap[w.distId];
+      return hit(n, norm((d ? d.name : '') + ' ' + w.name));
+    });
+    var todo = matchBottles(q, '', 40).filter(function (b) { return !findRecord(b.distId, b.name); });
+    var html = '';
+    if (ds.length) html += '<h2>Distilleries</h2><div class="grid">' + ds.map(tileHtml).join('') + '</div>';
+    if (have.length) html += '<h2>Collected</h2><div class="cards">' + have.map(whiskyCard).join('') + '</div>';
+    if (todo.length) html += '<h2>Still to find</h2><div class="cards">' + todo.map(lockedCard).join('') + '</div>';
+    if (!html) html = '<div class="empty">Nothing matches “' + esc(q) + '”.<br>Try a distillery, a region or part of a whisky name.</div>';
+    return html;
+  }
+
+  function exploreBody() {
+    var q = (state.exploreQ || '').trim();
+    if (q) return searchResults(q);
     var countries = [];
     state.dists.forEach(function (d) { if (countries.indexOf(d.country) < 0) countries.push(d.country); });
     var chips = countries.map(function (c) {
@@ -210,7 +295,7 @@
     state.dists.filter(function (d) { return d.country === state.country; }).forEach(function (d) {
       if (regions.indexOf(d.region) < 0) regions.push(d.region);
     });
-    var html = '<h1>Explore</h1><p class="muted small">Grey = not yet tried. A dot fills for each whisky you collect; collect ' + MASTER + ' from one distillery and it turns full colour.</p>' +
+    var html = '<p class="muted small">Grey = not yet tried. A dot fills for each whisky you collect; collect ' + MASTER + ' from one distillery and it turns full colour.</p>' +
       '<div class="chips">' + chips + '</div>';
     regions.forEach(function (r) {
       var rs = regionStats(r, state.country);
@@ -225,6 +310,12 @@
     return html;
   }
 
+  function viewExplore() {
+    return '<h1>Explore</h1>' +
+      '<input type="search" id="exSearch" class="search" placeholder="Search distilleries, regions or whiskies" autocomplete="off" autocorrect="off" autocapitalize="off" value="' + esc(state.exploreQ) + '">' +
+      '<div id="exBody">' + exploreBody() + '</div>';
+  }
+
   function viewDist(id) {
     var d = state.distMap[id];
     if (!d) return '<p>Not found.</p>';
@@ -234,13 +325,19 @@
       return '<button class="card" data-act="open" data-id="' + w.id + '"><div class="thumb"' + thumb + '>' + (w.photo ? '' : '🥃') + '</div>' +
         '<div><div class="t">' + esc(w.name) + '</div></div><div class="score">' + esc(w.rating || '–') + '<small>/10</small></div></button>';
     }).join('');
+    var todo = state.bottles.filter(function (b) { return b.distId === id && !findRecord(id, b.name); });
+    var locked = todo.map(function (b) {
+      return '<button class="card locked" data-act="addbottle" data-id="' + b.id + '"><div class="thumb">🔒</div>' +
+        '<div><div class="t">' + esc(b.name) + '</div><div class="muted small">Tap to unlock</div></div></button>';
+    }).join('');
     var n = distCount(id);
     return '<button class="back" data-go="explore">‹ Explore</button><h1>' + esc(d.name) + '</h1>' +
       '<div class="facts"><div><span>Region</span><span>' + esc(d.region) + (d.country !== d.region ? ', ' + esc(d.country) : '') + '</span></div>' +
-      '<div><span>Founded</span><span>' + esc(d.founded || '–') + '</span></div>' +
+      (d.founded ? '<div><span>Founded</span><span>' + esc(d.founded) + '</span></div>' : '') +
       '<div><span>Collected</span><span>' + n + ' / ' + MASTER + (n >= MASTER ? ' ★ mastered' : '') + '</span></div></div>' +
-      '<div class="cards">' + cards + '</div>' +
-      '<button class="btn block" style="margin-top:14px" data-act="addfor" data-id="' + id + '">Add a whisky from ' + esc(d.name) + '</button>';
+      (cards ? '<h2>Collected</h2><div class="cards">' + cards + '</div>' : '') +
+      (locked ? '<h2>Still to find</h2><div class="cards">' + locked + '</div>' : '') +
+      '<button class="btn block" style="margin-top:14px" data-act="addfor" data-id="' + id + '">Add another whisky from ' + esc(d.name) + '</button>';
   }
 
   function viewDetail(id) {
@@ -269,22 +366,23 @@
   function newDraft(distId) {
     var taste = {};
     FAMILIES.forEach(function (f) { taste[f.id] = 0; });
-    return { id: null, distId: distId || '', distName: distId && state.distMap[distId] ? state.distMap[distId].name : '', name: '', age: '', abv: '', where: '', date: today(), rating: 7, taste: taste, step: 0, notes: '', photo: '' };
+    return { id: null, distId: distId || '', distName: distId && state.distMap[distId] ? state.distMap[distId].name : '', name: '', age: '', abv: '', where: '', date: today(), rating: 7, taste: taste, step: 0, addNew: false, notes: '', photo: '' };
   }
 
   function viewAdd() {
     var dr = state.draft || (state.draft = newDraft());
-    var dl = state.dists.map(function (d) { return '<option value="' + esc(d.name) + '">' + esc(d.region) + '</option>'; }).join('');
-    var ex = window.EXPRESSIONS.map(function (e) { return '<option value="' + esc(e) + '">'; }).join('');
+    var countryOpts = ['Scotland', 'Japan', 'Ireland', 'Wales', 'England', 'USA', 'India', 'Taiwan', 'Australia', 'Sweden', 'Other'].map(function (c) { return '<option>' + c + '</option>'; }).join('');
     return '<h1>' + (dr.id ? 'Edit whisky' : 'Unlock a whisky') + '</h1>' +
       '<label class="photo-pick' + (dr.photo ? ' has' : '') + '" id="photoBox"' + (dr.photo ? ' style="background-image:url(' + dr.photo + ')"' : '') + '>' +
       '<span id="photoHint">' + (dr.photo ? '' : '📷 Tap to photograph the bottle or label') + '</span>' +
       '<input type="file" id="photoIn" accept="image/*" hidden></label>' +
-      '<label class="f">Distillery</label><input type="text" id="fDist" list="dl" autocomplete="off" placeholder="Start typing, e.g. Lagavulin" value="' + esc(dr.distName) + '"><datalist id="dl">' + dl + '</datalist>' +
-      '<div id="newDist" hidden><div class="toast warn small">Not in the list. Fill these in and it will be added as your own distillery.</div>' +
-      '<div class="row"><select id="nCountry">' + ['Scotland', 'Japan', 'Ireland', 'Wales', 'England', 'USA', 'India', 'Taiwan', 'Australia', 'Sweden', 'Other'].map(function (c) { return '<option>' + c + '</option>'; }).join('') + '</select>' +
+      '<label class="f">Distillery</label><input type="text" id="fDist" autocomplete="off" autocorrect="off" placeholder="Start typing, e.g. Lagav or Islay" value="' + esc(dr.distName) + '">' +
+      '<div class="sug" id="distSug" hidden></div>' +
+      '<div id="newDist"' + (dr.addNew && !dr.distId ? '' : ' hidden') + '><div class="toast warn small">Adding a new distillery. Fill these in (optional) and it joins your list.</div>' +
+      '<div class="row"><select id="nCountry">' + countryOpts + '</select>' +
       '<input type="text" id="nRegion" placeholder="Region (optional)"><input type="number" id="nFounded" placeholder="Founded"></div></div>' +
-      '<label class="f">Whisky / expression</label><input type="text" id="fName" list="exl" placeholder="e.g. 16 Year Old" value="' + esc(dr.name) + '"><datalist id="exl">' + ex + '</datalist>' +
+      '<label class="f">Whisky (single malt)</label><input type="text" id="fName" autocomplete="off" autocorrect="off" placeholder="Search or type, e.g. 12 Year Old" value="' + esc(dr.name) + '">' +
+      '<div class="sug" id="nameSug" hidden></div>' +
       '<div class="row"><div style="flex:1"><label class="f">Age (years)</label><input type="number" id="fAge" inputmode="numeric" value="' + esc(dr.age) + '"></div>' +
       '<div style="flex:1"><label class="f">ABV %</label><input type="number" id="fAbv" inputmode="decimal" step="0.1" value="' + esc(dr.abv) + '"></div></div>' +
       '<div class="row"><div style="flex:1"><label class="f">Date tried</label><input type="date" id="fDate" value="' + esc(dr.date) + '"></div>' +
@@ -322,6 +420,7 @@
     var tab = { home: 'home', detail: 'home', explore: 'explore', dist: 'explore', add: 'add', backup: 'backup' }[state.view];
     $$('#tabs button').forEach(function (b) { b.classList.toggle('on', b.id === 'tab-' + tab); });
     if (state.view === 'add') wireAdd();
+    if (state.view === 'explore') wireExplore();
     if (state.view === 'backup') wireBackup();
     window.scrollTo(0, 0);
   }
@@ -341,6 +440,67 @@
     return state.dists.filter(function (d) { return d.name.toLowerCase() === n; })[0] || null;
   }
 
+  /* ---------- Suggestion lists in the Add form ---------- */
+  function distRow(d) {
+    return '<button type="button" class="sug-row" data-act="pickdist" data-id="' + d.id + '"><span>' + esc(d.name) + '</span>' +
+      '<small>' + esc(d.region) + (d.country !== d.region ? ' · ' + esc(d.country) : '') + '</small></button>';
+  }
+  function bottleRow(b, showDist) {
+    var got = findRecord(b.distId, b.name);
+    return '<button type="button" class="sug-row" data-act="pickbottle" data-id="' + b.id + '"><span>' + esc(showDist ? b.full : b.name) + (got ? ' ✓' : '') + '</span>' +
+      '<small>' + (got ? 'collected' : '') + '</small></button>';
+  }
+  function renderDistSug() {
+    var box = $('#distSug');
+    if (!box) return;
+    var q = $('#fDist').value.trim();
+    if (!q || findDist(q)) { box.hidden = true; box.innerHTML = ''; return; }
+    var html = matchDists(q, 8).map(distRow).join('');
+    if (q.length >= 2) html += '<button type="button" class="sug-row add" data-act="newdist"><span>＋ Add “' + esc(q) + '” as a new distillery</span></button>';
+    box.innerHTML = html;
+    box.hidden = !html;
+  }
+  function renderNameSug() {
+    var box = $('#nameSug');
+    if (!box) return;
+    var dr = state.draft, q = $('#fName').value.trim();
+    var res = matchBottles(q, dr.distId, dr.distId ? 12 : 10);
+    var exact = !!dr.distId && res.some(function (b) { return norm(b.name) === norm(q); });
+    if (!res.length || exact) { box.hidden = true; box.innerHTML = ''; return; }
+    box.innerHTML = res.map(function (b) { return bottleRow(b, !dr.distId); }).join('');
+    box.hidden = false;
+  }
+  function pickDist(id) {
+    var dr = state.draft, d = state.distMap[id];
+    if (!d) return;
+    dr.distId = id; dr.distName = d.name; dr.addNew = false;
+    $('#fDist').value = d.name;
+    $('#newDist').hidden = true;
+    renderDistSug();
+    var fn = $('#fName');
+    fn.focus();
+    renderNameSug();
+  }
+  function pickBottle(id) {
+    var dr = state.draft, b = state.bottleMap[id];
+    if (!b) return;
+    var d = state.distMap[b.distId];
+    dr.distId = b.distId; dr.distName = d ? d.name : ''; dr.addNew = false;
+    dr.name = b.name; dr.age = b.age;
+    $('#fDist').value = dr.distName;
+    $('#fName').value = b.name;
+    $('#fAge').value = b.age;
+    $('#newDist').hidden = true;
+    renderDistSug();
+    renderNameSug();
+  }
+  function showNewDist() {
+    state.draft.addNew = true;
+    $('#newDist').hidden = false;
+    $('#distSug').hidden = true;
+  }
+
+  /* ---------- Taste wizard ---------- */
   function tasteHtml() {
     var dr = state.draft, st = dr.step, total = FAMILIES.length;
     var dots = FAMILIES.map(function (f, i) {
@@ -355,6 +515,7 @@
       }
       body = '<div class="tstep"><div class="muted small">Flavour ' + (st + 1) + ' of ' + total + '</div>' +
         '<div class="tname" style="color:' + f.color + '">' + f.name + '</div>' +
+        '<div class="subs">Contains flavours: ' + f.subs.join(', ') + '</div>' +
         '<div class="muted small">How strong is it? 1 = barely there, 10 = very strong</div></div>' +
         '<div class="numgrid">' + nums + '</div>' +
         '<div class="row"><button type="button" class="btn ghost" data-act="tback"' + (st === 0 ? ' disabled' : '') + '>‹ Back</button>' +
@@ -372,16 +533,19 @@
 
   function wireAdd() {
     var dr = state.draft;
-    var fDist = $('#fDist');
-    function checkDist() {
+    var fDist = $('#fDist'), fName = $('#fName');
+    fDist.addEventListener('input', function () {
       dr.distName = fDist.value;
       var d = findDist(fDist.value);
       dr.distId = d ? d.id : '';
-      $('#newDist').hidden = !!d || !fDist.value.trim();
-    }
-    fDist.addEventListener('input', checkDist);
-    checkDist();
-    $('#fName').addEventListener('input', function (e) { dr.name = e.target.value; });
+      if (d) dr.addNew = false;
+      $('#newDist').hidden = !(dr.addNew && !d);
+      renderDistSug();
+      renderNameSug();
+    });
+    fDist.addEventListener('focus', function () { $('#nameSug').hidden = true; renderDistSug(); });
+    fName.addEventListener('input', function () { dr.name = fName.value; renderNameSug(); });
+    fName.addEventListener('focus', function () { $('#distSug').hidden = true; renderNameSug(); });
     $('#fAge').addEventListener('input', function (e) { dr.age = e.target.value; });
     $('#fAbv').addEventListener('input', function (e) { dr.abv = e.target.value; });
     $('#fDate').addEventListener('input', function (e) { dr.date = e.target.value; });
@@ -401,6 +565,15 @@
         box.classList.add('has');
         $('#photoHint').textContent = '';
       }).catch(function () { alert('Could not read that photo. Try another one.'); });
+    });
+  }
+
+  function wireExplore() {
+    var inp = $('#exSearch');
+    if (!inp) return;
+    inp.addEventListener('input', function () {
+      state.exploreQ = inp.value;
+      $('#exBody').innerHTML = exploreBody();
     });
   }
 
@@ -434,6 +607,7 @@
     var regionBefore = {};
 
     var d = findDist(distName), p = Promise.resolve();
+    if (!d && !dr.addNew) { alert('Pick the distillery from the suggestions, or tap "Add as a new distillery".'); return Promise.resolve(); }
     if (!d) {
       var region = ($('#nRegion').value || '').trim() || $('#nCountry').value;
       d = { id: slug(distName) || uid(), name: distName, country: $('#nCountry').value, region: region, founded: $('#nFounded').value || '', custom: true };
@@ -534,6 +708,13 @@
     else if (act === 'hc') { state.homeCountry = v; render(); }
     else if (act === 'sort') { state.sort = v; render(); }
     else if (act === 'addfor') { state.draft = newDraft(id); state.view = 'add'; state.param = null; render(); }
+    else if (act === 'pickdist') pickDist(id);
+    else if (act === 'pickbottle') pickBottle(id);
+    else if (act === 'newdist') showNewDist();
+    else if (act === 'addbottle') {
+      var bt = state.bottleMap[id];
+      if (bt) { state.draft = newDraft(bt.distId); state.draft.name = bt.name; state.draft.age = bt.age; state.view = 'add'; state.param = null; render(); }
+    }
     else if (act === 'rate') {
       var dr = state.draft;
       if (dr.step < FAMILIES.length) {
