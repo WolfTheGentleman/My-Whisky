@@ -1,0 +1,15 @@
+Copyright (c) 2026 [YOUR NAME]. All rights reserved.
+
+"My Whisky" (the "Software"), including its source code, design, text, icons and
+the compiled data it contains, is the property of the copyright holder.
+
+No permission is granted to copy, modify, distribute, sublicense, sell, or create
+derivative works from the Software, in whole or in part, without the prior written
+permission of the copyright holder.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+THE COPYRIGHT HOLDER IS NOT LIABLE FOR ANY CLAIM OR DAMAGES ARISING FROM ITS USE.
+
+Distillery, brand and supermarket names mentioned in the Software are trademarks of
+their respective owners and are used for identification only. No affiliation with or
+endorsement by any of them is implied.

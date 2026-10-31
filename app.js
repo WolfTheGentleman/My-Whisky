@@ -1,4 +1,7 @@
-/* My Whisky - collection app. Everything is stored on this device (IndexedDB). */
+/*
+ * My Whisky - collection app. Everything is stored on this device (IndexedDB).
+ * Copyright (c) 2026. All rights reserved. See LICENSE.txt.
+ */
 (function () {
   'use strict';
 
@@ -403,7 +406,7 @@
       '<h2>Restore</h2><p class="muted">Importing merges a backup into the app. Entries with the same id are updated, nothing is deleted.</p>' +
       '<label class="btn ghost block" style="text-align:center">Import backup<input type="file" id="importIn" accept=".json,application/json" hidden></label>' +
       '<div id="backupMsg">' + (state.notice ? '<div class="toast">' + esc(state.notice) + '</div>' : '') + '</div>' +
-      '<h2>About</h2><p class="muted small">My Whisky v1 · ' + state.whiskies.length + ' whiskies saved · works offline once opened from the Home Screen.</p>';
+      '<h2>About</h2><p class="muted small">My Whisky v1 · ' + state.whiskies.length + ' whiskies saved · works offline once opened from the Home Screen.<br>© 2026 My Whisky. All rights reserved.</p>';
   }
 
   /* ---------- Rendering ---------- */
