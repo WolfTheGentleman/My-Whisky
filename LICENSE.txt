@@ -1,4 +1,4 @@
-Copyright (c) 2026 [YOUR NAME]. All rights reserved.
+Copyright (c) 2026 Aivaras Misiulis (WolfTheGentleman). All rights reserved.
 
 "My Whisky" (the "Software"), including its source code, design, text, icons and
 the compiled data it contains, is the property of the copyright holder.
