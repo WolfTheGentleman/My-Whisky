@@ -6,14 +6,14 @@
   var REGION_MIN = 3; // distilleries with at least one whisky for a region to turn colour
 
   var FAMILIES = [
-    { id: 'fruity', name: 'Fruity', color: '#12a07a', subs: ['Fresh fruit', 'Estery', 'Citrus', 'Fruity sweets'] },
-    { id: 'floral', name: 'Floral', color: '#e8506a', subs: ['Fresh flowers', 'Perfumed', 'Leafy', 'Plant house'] },
-    { id: 'peaty', name: 'Peaty', color: '#7b3f9e', subs: ['Smoky', 'Medicinal', 'Burnt', 'Tar'] },
-    { id: 'cereal', name: 'Cereal', color: '#f2a22a', subs: ['Dry cereal', 'Wet cereal', 'Malty', 'Yeasty'] },
-    { id: 'woody', name: 'Woody', color: '#8a2f44', subs: ['Oaky', 'Coconut', 'Nutty', 'Vanilla'] },
-    { id: 'feinty', name: 'Feinty', color: '#1f6fb5', subs: ['Leathery', 'Tobacco', 'Sweaty', 'Plastic'] },
-    { id: 'spicy', name: 'Spicy', color: '#f06a1e', subs: ['Dried spices', 'Peppery', 'Ginger', 'Sherried'] },
-    { id: 'sulphury', name: 'Sulphury', color: '#7aa23a', subs: ['Cooked vegetables', 'Meaty', 'Struck match', 'Rubbery'] }
+    { id: 'fruity', name: 'Fruity', color: '#12a07a' },
+    { id: 'floral', name: 'Floral', color: '#e8506a' },
+    { id: 'peaty', name: 'Peaty', color: '#7b3f9e' },
+    { id: 'cereal', name: 'Cereal', color: '#f2a22a' },
+    { id: 'woody', name: 'Woody', color: '#8a2f44' },
+    { id: 'feinty', name: 'Feinty', color: '#1f6fb5' },
+    { id: 'spicy', name: 'Spicy', color: '#f06a1e' },
+    { id: 'sulphury', name: 'Sulphury', color: '#7aa23a' }
   ];
 
   var $ = function (s, el) { return (el || document).querySelector(s); };
@@ -127,18 +127,18 @@
     var c = size / 2, R = size * 0.34, n = FAMILIES.length, out = '';
     function pt(i, v) {
       var a = -Math.PI / 2 + (i + 0.5) * (2 * Math.PI / n);
-      return [c + Math.cos(a) * R * v / 5, c + Math.sin(a) * R * v / 5];
+      return [c + Math.cos(a) * R * v / 10, c + Math.sin(a) * R * v / 10];
     }
-    for (var ring = 1; ring <= 5; ring++) {
+    [2, 4, 6, 8, 10].forEach(function (ring) {
       var pts = FAMILIES.map(function (f, i) { return pt(i, ring).join(','); }).join(' ');
       out += '<polygon points="' + pts + '" fill="none" stroke="#3a2e22" stroke-width="1"/>';
-    }
+    });
     FAMILIES.forEach(function (f, i) {
-      var p = pt(i, 5), l = pt(i, 6.4);
+      var p = pt(i, 10), l = pt(i, 12.8);
       out += '<line x1="' + c + '" y1="' + c + '" x2="' + p[0] + '" y2="' + p[1] + '" stroke="#3a2e22"/>';
       out += '<text x="' + l[0] + '" y="' + l[1] + '" fill="' + f.color + '" font-size="11" font-weight="700" text-anchor="middle" dominant-baseline="middle">' + f.name + '</text>';
     });
-    var poly = FAMILIES.map(function (f, i) { return pt(i, Math.max(0.15, (taste && taste[f.id]) || 0)).join(','); }).join(' ');
+    var poly = FAMILIES.map(function (f, i) { return pt(i, Math.max(0.3, (taste && taste[f.id]) || 0)).join(','); }).join(' ');
     out += '<polygon points="' + poly + '" fill="rgba(217,149,43,.35)" stroke="#d9952b" stroke-width="2" stroke-linejoin="round"/>';
     FAMILIES.forEach(function (f, i) {
       var v = (taste && taste[f.id]) || 0;
@@ -247,18 +247,11 @@
     var w = state.whiskies.filter(function (x) { return x.id === id; })[0];
     if (!w) return '<p>Not found.</p>';
     var d = state.distMap[w.distId] || {};
-    var flavs = [];
-    FAMILIES.forEach(function (f) {
-      (w.subs || []).forEach(function (s) {
-        if (f.subs.indexOf(s) >= 0) flavs.push('<span class="chip flav on" style="background:' + f.color + ';border-color:' + f.color + '">' + esc(s) + '</span>');
-      });
-    });
     return '<button class="back" data-go="home">‹ Collection</button>' +
       (w.photo ? '<img class="hero-img" src="' + w.photo + '" alt="">' : '') +
       '<h1 style="margin-top:12px">' + esc(fullName(w)) + '</h1>' +
       '<div class="row"><div class="rating-val" style="font-size:34px">' + esc(w.rating || '–') + '<span class="muted small"> /10</span></div></div>' +
       '<div class="radar-wrap">' + radarSvg(w.taste, 280) + '</div>' +
-      (flavs.length ? '<div class="chips">' + flavs.join('') + '</div>' : '') +
       '<div class="facts">' +
       '<div><span>Distillery</span><span>' + esc(d.name || '–') + '</span></div>' +
       '<div><span>Region</span><span>' + esc(d.region || '–') + (d.country && d.country !== d.region ? ', ' + esc(d.country) : '') + '</span></div>' +
@@ -276,21 +269,13 @@
   function newDraft(distId) {
     var taste = {};
     FAMILIES.forEach(function (f) { taste[f.id] = 0; });
-    return { id: null, distId: distId || '', distName: distId && state.distMap[distId] ? state.distMap[distId].name : '', name: '', age: '', abv: '', where: '', date: today(), rating: 7, taste: taste, subs: [], notes: '', photo: '' };
+    return { id: null, distId: distId || '', distName: distId && state.distMap[distId] ? state.distMap[distId].name : '', name: '', age: '', abv: '', where: '', date: today(), rating: 7, taste: taste, step: 0, notes: '', photo: '' };
   }
 
   function viewAdd() {
     var dr = state.draft || (state.draft = newDraft());
     var dl = state.dists.map(function (d) { return '<option value="' + esc(d.name) + '">' + esc(d.region) + '</option>'; }).join('');
     var ex = window.EXPRESSIONS.map(function (e) { return '<option value="' + esc(e) + '">'; }).join('');
-    var fam = FAMILIES.map(function (f) {
-      var chips = f.subs.map(function (s) {
-        return '<button type="button" class="chip flav' + (dr.subs.indexOf(s) >= 0 ? ' on' : '') + '" data-act="sub" data-f="' + f.id + '" data-s="' + esc(s) + '"' +
-          (dr.subs.indexOf(s) >= 0 ? ' style="background:' + f.color + ';border-color:' + f.color + '"' : '') + '>' + esc(s) + '</button>';
-      }).join('');
-      return '<div class="fam"><div class="top"><i class="dot" style="background:' + f.color + '"></i><b>' + f.name + '</b><span class="lv" id="lv-' + f.id + '">' + dr.taste[f.id] + '/5</span></div>' +
-        '<input type="range" min="0" max="5" step="1" value="' + dr.taste[f.id] + '" data-fam="' + f.id + '"><div class="chips">' + chips + '</div></div>';
-    }).join('');
     return '<h1>' + (dr.id ? 'Edit whisky' : 'Unlock a whisky') + '</h1>' +
       '<label class="photo-pick' + (dr.photo ? ' has' : '') + '" id="photoBox"' + (dr.photo ? ' style="background-image:url(' + dr.photo + ')"' : '') + '>' +
       '<span id="photoHint">' + (dr.photo ? '' : '📷 Tap to photograph the bottle or label') + '</span>' +
@@ -306,8 +291,8 @@
       '<div style="flex:1"><label class="f">Where</label><input type="text" id="fWhere" placeholder="Pub, bar, bought…" value="' + esc(dr.where) + '"></div></div>' +
       '<label class="f">Your rating</label><div class="rating-val" id="rv">' + dr.rating + '<span class="muted small"> /10</span></div>' +
       '<input type="range" id="fRating" min="1" max="10" step="1" value="' + dr.rating + '">' +
-      '<h2>Taste chart</h2><p class="muted small">Slide each family for strength, and tap the notes you pick up.</p>' +
-      '<div class="radar-wrap" id="radar">' + radarSvg(dr.taste, 260) + '</div>' + fam +
+      '<h2>Taste chart</h2><p class="muted small">Rate each of the 8 flavour families from 1 to 10, one at a time.</p>' +
+      '<div id="tasteBox">' + tasteHtml() + '</div>' +
       '<label class="f">Notes &amp; awards (optional)</label><textarea id="fNotes" placeholder="Anything worth remembering…">' + esc(dr.notes) + '</textarea>' +
       '<button class="btn block sticky-save" id="saveBtn" data-act="save">' + (dr.id ? 'Save changes' : 'Unlock it') + '</button>' +
       (dr.id ? '<button class="btn ghost block" style="margin-top:10px" data-act="cancel">Cancel</button>' : '');
@@ -356,8 +341,33 @@
     return state.dists.filter(function (d) { return d.name.toLowerCase() === n; })[0] || null;
   }
 
-  function updateRadar() {
-    $('#radar').innerHTML = radarSvg(state.draft.taste, 260);
+  function tasteHtml() {
+    var dr = state.draft, st = dr.step, total = FAMILIES.length;
+    var dots = FAMILIES.map(function (f, i) {
+      return '<button type="button" class="tdot' + (i === st ? ' cur' : '') + (dr.taste[f.id] ? ' set' : '') + '" data-act="tjump" data-v="' + i + '" style="--c:' + f.color + '" aria-label="' + f.name + '"></button>';
+    }).join('');
+    var body;
+    if (st < total) {
+      var f = FAMILIES[st], cur = dr.taste[f.id], nums = '';
+      for (var n = 1; n <= 10; n++) {
+        nums += '<button type="button" class="num' + (cur === n ? ' on' : '') + '" data-act="rate" data-v="' + n + '"' +
+          (cur === n ? ' style="background:' + f.color + ';border-color:' + f.color + '"' : '') + '>' + n + '</button>';
+      }
+      body = '<div class="tstep"><div class="muted small">Flavour ' + (st + 1) + ' of ' + total + '</div>' +
+        '<div class="tname" style="color:' + f.color + '">' + f.name + '</div>' +
+        '<div class="muted small">How strong is it? 1 = barely there, 10 = very strong</div></div>' +
+        '<div class="numgrid">' + nums + '</div>' +
+        '<div class="row"><button type="button" class="btn ghost" data-act="tback"' + (st === 0 ? ' disabled' : '') + '>‹ Back</button>' +
+        '<button type="button" class="btn ghost" data-act="tnext" style="margin-left:auto">' + (cur ? 'Next ›' : 'Skip ›') + '</button></div>';
+    } else {
+      body = '<div class="tstep"><div class="tname">Taste chart complete ✓</div><div class="muted small">Tap any dot above to change a flavour.</div></div>';
+    }
+    return '<div class="radar-wrap">' + radarSvg(dr.taste, 260) + '</div><div class="tdots">' + dots + '</div>' + body;
+  }
+
+  function renderTaste() {
+    var box = $('#tasteBox');
+    if (box) box.innerHTML = tasteHtml();
   }
 
   function wireAdd() {
@@ -380,14 +390,6 @@
     $('#fRating').addEventListener('input', function (e) {
       dr.rating = +e.target.value;
       $('#rv').innerHTML = dr.rating + '<span class="muted small"> /10</span>';
-    });
-    $$('input[data-fam]').forEach(function (r) {
-      r.addEventListener('input', function (e) {
-        var f = e.target.getAttribute('data-fam');
-        dr.taste[f] = +e.target.value;
-        $('#lv-' + f).textContent = e.target.value + '/5';
-        updateRadar();
-      });
     });
     $('#photoIn').addEventListener('change', function (e) {
       var file = e.target.files && e.target.files[0];
@@ -420,24 +422,6 @@
     });
   }
 
-  function toggleSub(fid, sub, btn) {
-    var dr = state.draft, fam = FAMILIES.filter(function (f) { return f.id === fid; })[0];
-    var i = dr.subs.indexOf(sub);
-    if (i >= 0) {
-      dr.subs.splice(i, 1);
-      btn.classList.remove('on'); btn.style.background = ''; btn.style.borderColor = '';
-    } else {
-      dr.subs.push(sub);
-      btn.classList.add('on'); btn.style.background = fam.color; btn.style.borderColor = fam.color;
-      if (dr.taste[fid] < 2) {
-        dr.taste[fid] = 2;
-        var r = $('input[data-fam="' + fid + '"]'); if (r) r.value = 2;
-        $('#lv-' + fid).textContent = '2/5';
-        updateRadar();
-      }
-    }
-  }
-
   function saveDraft() {
     var dr = state.draft;
     var name = (dr.name || '').trim();
@@ -459,7 +443,7 @@
     var existing = dr.id ? state.whiskies.filter(function (w) { return w.id === dr.id; })[0] : null;
     var rec = {
       id: dr.id || uid(), distId: d.id, name: name, age: dr.age, abv: dr.abv, where: dr.where, date: dr.date,
-      rating: dr.rating, taste: dr.taste, subs: dr.subs, notes: dr.notes, photo: dr.photo,
+      rating: dr.rating, taste: dr.taste, notes: dr.notes, photo: dr.photo,
       created: existing ? existing.created : Date.now(), updated: Date.now()
     };
     var isNew = !existing;
@@ -550,7 +534,20 @@
     else if (act === 'hc') { state.homeCountry = v; render(); }
     else if (act === 'sort') { state.sort = v; render(); }
     else if (act === 'addfor') { state.draft = newDraft(id); state.view = 'add'; state.param = null; render(); }
-    else if (act === 'sub') toggleSub(t.getAttribute('data-f'), t.getAttribute('data-s'), t);
+    else if (act === 'rate') {
+      var dr = state.draft;
+      if (dr.step < FAMILIES.length) {
+        dr.taste[FAMILIES[dr.step].id] = +v;
+        var shown = dr.step;
+        renderTaste();
+        setTimeout(function () {
+          if (state.draft === dr && dr.step === shown) { dr.step = Math.min(shown + 1, FAMILIES.length); renderTaste(); }
+        }, 220);
+      }
+    }
+    else if (act === 'tnext') { state.draft.step = Math.min(state.draft.step + 1, FAMILIES.length); renderTaste(); }
+    else if (act === 'tback') { state.draft.step = Math.max(state.draft.step - 1, 0); renderTaste(); }
+    else if (act === 'tjump') { state.draft.step = +v; renderTaste(); }
     else if (act === 'save') saveDraft();
     else if (act === 'cancel') { var wid = state.draft && state.draft.id; state.draft = null; if (wid) { state.view = 'detail'; state.param = wid; } else state.view = 'home'; render(); }
     else if (act === 'export') exportBackup();
@@ -561,7 +558,9 @@
       state.draft.distName = d ? d.name : '';
       state.draft.taste = state.draft.taste || {};
       FAMILIES.forEach(function (f) { if (typeof state.draft.taste[f.id] !== 'number') state.draft.taste[f.id] = 0; });
-      state.draft.subs = state.draft.subs || [];
+      delete state.draft.subs;
+      var firstOpen = FAMILIES.findIndex(function (f) { return !state.draft.taste[f.id]; });
+      state.draft.step = firstOpen < 0 ? FAMILIES.length : firstOpen;
       state.draft.photo = state.draft.photo || '';
       state.view = 'add'; state.param = null; render();
     }
